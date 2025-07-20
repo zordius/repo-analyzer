@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const { debugLog } = require('./utils');
+import fs from 'fs';
+import path from 'path';
+import { debugLog } from './utils.js';
 
 class ReportGenerator {
   constructor(outputDir = '.', debugMode) {
@@ -24,4 +24,4 @@ class ReportGenerator {
   }
 }
 
-module.exports = ReportGenerator;
+export default ReportGenerator;

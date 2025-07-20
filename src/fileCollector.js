@@ -1,7 +1,7 @@
-const { glob } = require('glob');
-const fs = require('fs');
-const { debugLog } = require('./utils');
-const { Minimatch } = require('minimatch');
+import { glob } from 'glob';
+import fs from 'fs';
+import { debugLog } from './utils.js';
+import { Minimatch } from 'minimatch';
 
 class FileCollector {
   constructor(options) {
@@ -80,4 +80,4 @@ class FileCollector {
   }
 }
 
-module.exports = FileCollector;
+export default FileCollector;

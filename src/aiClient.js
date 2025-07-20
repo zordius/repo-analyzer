@@ -1,5 +1,5 @@
-const { exec } = require('child_process');
-const { debugLog } = require('./utils');
+import { exec } from 'child_process';
+import { debugLog } from './utils.js';
 
 class AIClient {
   constructor(cliCommand, timeout, debugMode) {
@@ -43,4 +43,4 @@ class AIClient {
   }
 }
 
-module.exports = AIClient;
+export default AIClient;

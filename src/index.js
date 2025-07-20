@@ -1,9 +1,9 @@
-const fs = require('fs');
-const pLimit = require('p-limit');
-const FileCollector = require('./fileCollector');
-const AIClient = require('./aiClient');
-const ReportGenerator = require('./reportGenerator');
-const { debugLog } = require('./utils');
+import fs from 'fs';
+import pLimit from 'p-limit';
+import FileCollector from './fileCollector.js';
+import AIClient from './aiClient.js';
+import ReportGenerator from './reportGenerator.js';
+import { debugLog } from './utils.js';
 
 class RepoAnalyzer {
   constructor(options) {
@@ -116,4 +116,4 @@ class RepoAnalyzer {
   }
 }
 
-module.exports = { RepoAnalyzer };
+export { RepoAnalyzer };

@@ -4,4 +4,4 @@ function debugLog(debugMode, message) {
   }
 }
 
-module.exports = { debugLog };
+export { debugLog };

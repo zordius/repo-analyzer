@@ -1,6 +1,6 @@
-const { Command } = require('commander');
-const fs = require('fs');
-const { RepoAnalyzer } = require('./index');
+import { Command } from 'commander';
+import fs from 'fs';
+import { RepoAnalyzer } from './index.js';
 
 const program = new Command();
 
