@@ -13,7 +13,7 @@ program.option('--exclude <patterns...>', 'Patterns for files/directories to exc
   .option('--include <patterns...>', 'Patterns for files/directories to explicitly include in analysis.', [])
   .option('--timeout <seconds>', 'Timeout in seconds for AI API calls.', parseInt, 60)
   .option('--debug', 'Enable verbose debug output.', false)
-  .option('--cli <name>', 'The executable name of the AI command-line tool to use for analysis.', 'gemini')
+  .option('--cli <name>', 'The executable name of the AI command-line tool to use for analysis.', 'gemini -p')
   .option('--context-size <size>', 'Maximum context size (in characters/tokens) for the AI model per batch.', parseInt, 10000)
   .option('--prompt-file <file>', 'Path to a file containing the base prompt for AI analysis.')
   .option('--instances <number>', 'Maximum number of parallel AI analysis instances.', parseInt, 2);

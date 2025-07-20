@@ -17,7 +17,7 @@ The system should consist of the following main components:
     *   `--include` (list of glob patterns, optional): Patterns for files/directories to explicitly include in analysis. These patterns are considered after `--exclude` patterns, meaning if a file matches both an include and an exclude pattern, it will be excluded.
     *   `--timeout` (integer, default: 60): Timeout in seconds for AI API calls.
     *   `--debug` (flag): Enable verbose debug output.
-    *   `--cli` (string, default: 'gemini'): The executable name of the AI command-line tool to use for analysis (e.g., 'gemini', 'gcloud ai').
+    *   `--cli` (string, default: 'gemini -p'): The executable name of the AI command-line tool to use for analysis.
     *   `--context-size` (integer, default: 10000): Maximum context size (in characters/tokens) for the AI model per batch.
     *   `--prompt-file` (string, required): Path to a file containing the base prompt for AI analysis. This prompt will be augmented with the collected file contents.
     *   `--instances` (integer, default: 2): Maximum number of parallel AI analysis instances.
@@ -32,7 +32,7 @@ The system should consist of the following main components:
         *   Read the content of the collected files. Skip very large or empty files.
         *   Batch the collected file contents. Each batch should not exceed the `--context-size`.
         *   For each batch, augment the user-provided prompt (from `--prompt-file`) with the file contents.
-        *   Execute AI analysis for each batch in parallel, up to `--instances` concurrent processes, by directly calling the configured AI CLI with the augmented prompt.
+        *   Execute AI analysis for each batch in parallel, up to `--instances` concurrent processes, by directly calling the configured AI CLI with the augmented prompt. Concurrency is managed by a robust queuing mechanism.
         *   Aggregate the results from all parallel analyses.
         *   Generate and save reports based on the analysis type. Handle errors from subprocesses gracefully.
 
@@ -54,9 +54,9 @@ The system should consist of the following main components:
 *   **Interface**: Define a base `AIClient` with an `analyze(prompt)` method.
 *   **Implementations**:
     *   **CLI-based Client**: Interacts with an external AI command-line tool (e.g., `gemini -p <prompt>`).
-        *   Handle `FileNotFoundError` if the CLI tool is not found.
-        *   Handle `TimeoutExpired` if the command times out.
-        *   Handle `CalledProcessError` for other command execution errors.
+        *   Handle cases where the CLI tool is not found.
+        *   Handle command timeouts.
+        *   Handle other command execution errors.
         *   Extract the relevant output from the CLI tool's stdout (e.g., everything after a specific marker like `---ANALYSIS-START---`).
 
 
@@ -74,7 +74,7 @@ The system should consist of the following main components:
 
 ## Technical Considerations
 
-*   **Parallel Processing**: Implement parallel execution of AI analysis tasks using subprocesses. Manage the number of concurrent processes to avoid overwhelming the AI service or local resources.
+*   **Parallel Processing**: Implement parallel execution of AI analysis tasks using subprocesses, managed by a robust queuing mechanism. Manage the number of concurrent processes to avoid overwhelming the AI service or local resources.
 *   **Error Handling**: Implement robust error handling for file operations, AI API calls, and subprocess execution.
 *   **Context Management**: Carefully manage the AI model's context window by batching file contents.
 *   **Modularity**: Design the system with clear separation of concerns, allowing for easy extension (e.g., adding new AI clients, new types of analyzers).
