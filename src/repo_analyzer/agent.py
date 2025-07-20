@@ -51,8 +51,15 @@ class AgentOrchestrator:
             practices = self._analyze_in_parallel(self.practice_extractor, "# Extracted Practices", temp_dir)
             knowledge = self._analyze_in_parallel(self.knowledge_extractor, "# Extracted Knowledge", temp_dir)
 
-            self.reporter.write_report("ai4ci-practices.md", practices)
-            self.reporter.write_report("ai4ci-knowledge.md", knowledge)
+            if not practices.startswith("---ANALYSIS-ERROR---"):
+                self.reporter.write_report("ai4ci-practices.md", practices)
+            else:
+                print(f"Skipping writing ai4ci-practices.md due to errors in subprocesses: {practices}")
+
+            if not knowledge.startswith("---ANALYSIS-ERROR---"):
+                self.reporter.write_report("ai4ci-knowledge.md", knowledge)
+            else:
+                print(f"Skipping writing ai4ci-knowledge.md due to errors in subprocesses: {knowledge}")
         finally:
             if temp_dir_obj:
                 temp_dir_obj.cleanup()
@@ -62,7 +69,10 @@ class AgentOrchestrator:
             prompt = f.read()
         
         result = self.analyzer.analyze_content(prompt)
-        print(result)
+        if result.startswith("---ANALYSIS-ERROR---"):
+            print(f"Analysis failed: {result}")
+        else:
+            print(result)
 
     def _analyze_in_parallel(self, extractor, header, temp_dir):
         """Analyzes files in parallel batches."""
@@ -98,16 +108,27 @@ class AgentOrchestrator:
                 process = subprocess.Popen(command, stdout=out, stderr=err)
                 active_processes.append(process)
 
-        # Wait for any remaining processes to complete
-        for process in active_processes:
-            process.wait()
-
-        # Aggregate results
+        # Wait for all processes to complete and aggregate results
         all_results = []
-        for i in range(len(batches)):
+        all_errors = []
+        for i, process in enumerate(active_processes):
+            process.wait()
             output_file = os.path.join(temp_dir, f"output_{i}.txt")
-            with open(output_file, "r") as f:
-                all_results.append(f.read())
+            error_file = os.path.join(temp_dir, f"error_{i}.txt")
+
+            if process.returncode == 0:
+                with open(output_file, "r") as f:
+                    all_results.append(f.read())
+            else:
+                with open(error_file, "r") as f:
+                    error_content = f.read().strip()
+                    if error_content:
+                        all_errors.append(f"Error in subprocess for batch {i}: {error_content}")
+                    else:
+                        all_errors.append(f"Error in subprocess for batch {i}: Unknown error (return code {process.returncode})")
+
+        if not all_results and all_errors:
+            return "---ANALYSIS-ERROR---\n" + "\n".join(all_errors)
         
         final_report = ""
         for i, result in enumerate(all_results):

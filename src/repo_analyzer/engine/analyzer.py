@@ -12,6 +12,7 @@ class Analyzer:
             print_debug_info("PROMPT", prompt)
 
         try:
-            return self.ai_client.analyze(prompt)
+            result = self.ai_client.analyze(prompt)
+            return result
         except Exception as e:
-            return f"An error occurred during analysis."
+            return f"---ANALYSIS-ERROR---An error occurred during analysis: {e}"

@@ -17,7 +17,7 @@ class GenerativeAIClient(AIClient):
         try:
             self.model = genai.GenerativeModel('gemini-1.5-flash')
         except Exception as e:
-            print(f"Failed to initialize Gemini model: {e}")
+            print(f"Error: Failed to initialize Gemini model: {e}")
             print("Please make sure you have set the GOOGLE_API_KEY environment variable or authenticated with `gcloud auth application-default login`.")
             raise
 
@@ -28,10 +28,9 @@ class GenerativeAIClient(AIClient):
                 print_debug_info("RESPONSE", response.text)
             return response.text
         except Exception as e:
-            print(f"An error occurred during API call: {e}")
-            return """# Extracted Practices
-
-An error occurred during analysis."""
+            error_message = f"Error: An error occurred during API call: {e}"
+            print(error_message)
+            return error_message
 
 class GeminiCLIClient(AIClient):
     def analyze(self, prompt):
@@ -54,22 +53,17 @@ class GeminiCLIClient(AIClient):
 
             return response_text
         except FileNotFoundError:
-            print("Error: The 'gemini' command was not found.")
-            print("Please ensure the Gemini CLI is installed and in your PATH.")
-            return """# Extracted Practices
-
-Gemini CLI not found."""
+            error_message = "Error: The 'gemini' command was not found. Please ensure the Gemini CLI is installed and in your PATH."
+            print(error_message)
+            return error_message
         except subprocess.TimeoutExpired:
-            print("Error: The 'gemini' command timed out.")
-            return """# Extracted Practices
-
-Gemini CLI timed out."""
+            error_message = "Error: The 'gemini' command timed out."
+            print(error_message)
+            return error_message
         except subprocess.CalledProcessError as e:
-            print(f"Error executing Gemini CLI: {e}")
-            print(f"Stderr: {e.stderr}")
-            return f"""# Extracted Practices
-
-An error occurred during Gemini CLI execution."""
+            error_message = f"Error executing Gemini CLI: {e}\nStderr: {e.stderr}"
+            print(error_message)
+            return error_message
 
 def get_ai_client(timeout=60, debug=False, client_type='google-gemini-cli'):
     if client_type == "google-gemini-cli":
