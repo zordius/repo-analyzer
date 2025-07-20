@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implement a command-line tool that analyzes a given codebase to extract "coding practices" and "domain knowledge" using an external Artificial Intelligence (AI) model. The tool should be highly configurable, support parallel processing, and generate structured reports.
+Implement a command-line tool that facilitates large-scale code analysis using an external Artificial Intelligence (AI) command-line interface (CLI). The tool automatically manages context size by batching file content and augmenting a user-provided base prompt, enabling efficient parallel processing and structured report generation.
 
 ## Core Components and Functionality
 
@@ -12,27 +12,27 @@ The system should consist of the following main components:
 
 *   **Purpose**: Parse command-line arguments and orchestrate the analysis process.
 *   **Configuration Options**:
-    *   `--level` (integer, default: 1): Analysis level (e.g., 1-5), potentially influencing the depth or type of analysis.
-    *   `--skip` (list of glob patterns, optional): Patterns for files/directories to exclude from analysis.
+    
+    *   `--exclude` (list of glob patterns, optional, default: common build artifacts, version control directories, and binary files): Patterns for files/directories to exclude from analysis. These patterns are applied in addition to a set of default exclusions (e.g., `node_modules`, `.git` subdirectories, compiled files, images, archives).
+    *   `--include` (list of glob patterns, optional): Patterns for files/directories to explicitly include in analysis. These patterns are considered after `--exclude` patterns, meaning if a file matches both an include and an exclude pattern, it will be excluded.
     *   `--timeout` (integer, default: 60): Timeout in seconds for AI API calls.
     *   `--debug` (flag): Enable verbose debug output.
     *   `--cli` (string, default: 'gemini'): The executable name of the AI command-line tool to use for analysis (e.g., 'gemini', 'gcloud ai').
     *   `--context-size` (integer, default: 10000): Maximum context size (in characters/tokens) for the AI model per batch.
-    *   `--prompt-file` (optional): Path to a file containing a pre-defined prompt for direct AI analysis (bypasses file collection).
+    *   `--prompt-file` (string, required): Path to a file containing the base prompt for AI analysis. This prompt will be augmented with the collected file contents.
     *   `--instances` (integer, default: 2): Maximum number of parallel AI analysis instances.
 
 ### 2. Orchestrator / Agent
 
 *   **Purpose**: Manage the entire analysis workflow.
 *   **Workflow**:
-    1.  If `--prompt-file` is provided, read its content and send it directly to the AI for analysis, then print the result.
-    2.  Otherwise:
+    1.  Collect files by recursively scanning the current directory.
         *   Collect files by recursively scanning the current directory.
-        *   Filter out files based on `--skip` patterns, common ignored directories (e.g., `node_modules`, `.git`, `__pycache__`), and common binary/archive file extensions (e.g., `.jpg`, `.zip`, `.pdf`).
+        *   Filter out files based on `--exclude` and `--include` patterns, common ignored directories (e.g., `node_modules`, `.git`, `__pycache__`), and common binary/archive file extensions (e.g., `.jpg`, `.zip`, `.pdf`).
         *   Read the content of the collected files. Skip very large or empty files.
         *   Batch the collected file contents. Each batch should not exceed the `--context-size`.
-        *   For each batch, generate a specific prompt for analysis (e.g., for "coding practices" or "domain knowledge").
-        *   Execute AI analysis for each batch in parallel, up to `--instances` concurrent processes. Each parallel process should ideally be a separate invocation of the main application with the `--prompt-file` argument.
+        *   For each batch, augment the user-provided prompt (from `--prompt-file`) with the file contents.
+        *   Execute AI analysis for each batch in parallel, up to `--instances` concurrent processes, by directly calling the configured AI CLI with the augmented prompt.
         *   Aggregate the results from all parallel analyses.
         *   Generate and save reports based on the analysis type. Handle errors from subprocesses gracefully.
 
@@ -42,7 +42,8 @@ The system should consist of the following main components:
 *   **Functionality**:
     *   Collect files from current directory (recursively).
     *   Implement robust filtering based on:
-        *   Explicit `skip_patterns` (glob patterns).
+        *   Explicit `exclude_patterns` (glob patterns).
+        *   Explicit `include_patterns` (glob patterns).
         *   Common ignored directories (e.g., `__pycache__`, `node_modules`, `build`, `dist`, `.vscode`, `.idea`, `venv`, `.git` subdirectories like `logs`, `objects`).
         *   Common ignored file extensions (e.g., `.pyc`, `.so`, `.dll`, image formats, archive formats, `.pdf`, `.doc`).
     *   Return relative paths of collected files.
@@ -58,14 +59,7 @@ The system should consist of the following main components:
         *   Handle `CalledProcessError` for other command execution errors.
         *   Extract the relevant output from the CLI tool's stdout (e.g., everything after a specific marker like `---ANALYSIS-START---`).
 
-### 5. Analyzers
 
-*   **Purpose**: Generate specific prompts for the AI model based on the analysis type (e.g., practices, knowledge, analysis level).
-*   **Base Analyzer**: A base class with a method `get_prompt(files_to_analyze_string)` that formats a template with the file contents.
-*   **Specific Analyzers**: Implement concrete analyzers for different types of analysis, each defining its own prompt content, rules for extraction, and output format. Examples include:
-    *   Practice Analyzer
-    *   Knowledge Analyzer
-    *   Level Analyzer (for determining which files to include based on analysis level)
 
 ### 6. Report Generator
 
