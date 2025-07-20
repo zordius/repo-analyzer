@@ -11,6 +11,7 @@ By default, check all files under current directory, and do level 1 analyze
 * `-list` $file : read relative path file names from the $file, then work on these files
 * `-level` $n : do level $n analyze
 * `--skip` $pattern ... : a list of glob patterns to skip during analysis
+* `--timeout` $seconds : the timeout in seconds for the API call (default: 60)
 
 Analyze Levels
 --------------
