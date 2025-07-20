@@ -12,6 +12,7 @@ By default, check all files under current directory, and do level 1 analyze
 * `-level` $n : do level $n analyze
 * `--skip` $pattern ... : a list of glob patterns to skip during analysis
 * `--timeout` $seconds : the timeout in seconds for the API call (default: 60)
+* `--debug` : enable debug mode for verbose output
 
 Analyze Levels
 --------------
