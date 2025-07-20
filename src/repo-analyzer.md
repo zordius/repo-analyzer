@@ -10,6 +10,7 @@ By default, check all files under current directory, and do level 1 analyze
 
 * `-list` $file : read relative path file names from the $file, then work on these files
 * `-level` $n : do level $n analyze
+* `--skip` $pattern ... : a list of glob patterns to skip during analysis
 
 Analyze Levels
 --------------
@@ -17,12 +18,13 @@ Analyze Levels
 The analyze level can be changed by the command line argument `-level n` . If a file related with higher level, do not include it. If a file related with lower level, also include it.
 
 * Level 1:
-  * only extract practices and domain knowledges from files, do not include more information sources
+  * Analyzes the user's source files.
+  * Ignores binary files, build artifacts (e.g., `build`, `dist`), and common temporary directories (e.g., `node_modules`, `__pycache__`).
+  * Skips most of the `.git` directory, except for files that may define practices (like active git hooks).
+  * Respects the project's `.gitignore` file.
 * Level 2:
-  * also extract practices and domain knowledges from git related files:
-    * follow the .gitignore file if the project is inside a git respository
-    * if the project is under the git mono repository, considering only files under this project
-    * if there is .git/hooks directory in the git repository, also check it
+  * Expands analysis to include git-specific files.
+  * Reads active (non-sample) git hooks from the `.git/hooks` directory.
 * Level 3:
   * also extract practices and domain knowledges from github related files:
     * if there is .github directory in the git repository, also check it
