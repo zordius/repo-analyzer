@@ -25,4 +25,4 @@ class PracticeExtractor(BaseExtractor):
 
         Your analysis output must start with the exact text: ---ANALYSIS-START---
         """
-        self.analysis_type = "coding practices"
+        

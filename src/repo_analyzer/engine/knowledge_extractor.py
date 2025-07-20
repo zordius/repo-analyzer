@@ -16,5 +16,5 @@ class KnowledgeExtractor(BaseExtractor):
 
         Your analysis output must start with the exact text: ---ANALYSIS-START---
         """
-        self.analysis_type = "domain knowledge"
+        
 

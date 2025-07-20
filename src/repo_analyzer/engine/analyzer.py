@@ -7,11 +7,11 @@ class Analyzer:
         self.debug = debug
         self.ai_client = get_ai_client(timeout=self.timeout, debug=self.debug, client_type=ai_client)
 
-    def analyze_content(self, prompt, analysis_type="content"):
+    def analyze_content(self, prompt):
         if self.debug:
             print_debug_info("PROMPT", prompt)
 
         try:
             return self.ai_client.analyze(prompt)
         except Exception as e:
-            return f"# Extracted {analysis_type.replace('files for ', '').title()}\n\nAn error occurred during analysis."
+            return f"An error occurred during analysis."
