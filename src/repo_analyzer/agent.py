@@ -1,10 +1,9 @@
 import os
 import tempfile
 import subprocess
-from .collectors.file_collector import FileCollector
+from .engine.base_extractor import BaseExtractor
 from .engine.practice_extractor import PracticeExtractor
 from .engine.knowledge_extractor import KnowledgeExtractor
-from .reporter import ReportGenerator
 
 class AgentOrchestrator:
     def __init__(self, level, file_list, skip_patterns=None, timeout=60, debug=False, ai_client='cli', context_size=10000, prompt_file=None, instances=2):
