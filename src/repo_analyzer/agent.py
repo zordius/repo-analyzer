@@ -1,9 +1,11 @@
 import os
 import tempfile
 import subprocess
-from .engine.base_extractor import BaseExtractor
+from .collectors.file_collector import FileCollector
 from .engine.practice_extractor import PracticeExtractor
 from .engine.knowledge_extractor import KnowledgeExtractor
+from .reporter import ReportGenerator
+from .prompt_builder import PromptBuilder
 
 class AgentOrchestrator:
     def __init__(self, level, file_list, skip_patterns=None, timeout=60, debug=False, ai_client='cli', context_size=10000, prompt_file=None, instances=2):
@@ -20,6 +22,7 @@ class AgentOrchestrator:
         self.practice_extractor = PracticeExtractor(timeout=self.timeout, debug=self.debug, ai_client=self.ai_client)
         self.knowledge_extractor = KnowledgeExtractor(timeout=self.timeout, debug=self.debug, ai_client=self.ai_client)
         self.reporter = ReportGenerator()
+        self.prompt_builder = PromptBuilder()
 
     def run(self):
         if self.prompt_file:
@@ -148,10 +151,13 @@ class AgentOrchestrator:
         total_batches = len(temp_batches)
 
         for file_path, content in self.file_contents.items():
+            # Build the files_to_analyze string for the current batch
+            files_to_analyze_str = self.prompt_builder.build_files_content(current_batch)
+
             if current_size + len(content) > self.context_size and current_batch:
                 batch_prompt_file = os.path.join(temp_dir, f"prompt_{batch_counter}.txt")
                 with open(batch_prompt_file, "w") as f:
-                    f.write(extractor.analyze(current_batch, batch_counter + 1, total_batches, return_prompt=True))
+                    f.write(extractor.analyze(files_to_analyze_str, batch_counter + 1, total_batches, return_prompt=True))
                 batches.append(batch_prompt_file)
                 current_batch = {}
                 current_size = 0
@@ -161,9 +167,10 @@ class AgentOrchestrator:
             current_size += len(content)
 
         if current_batch:
+            files_to_analyze_str = self.prompt_builder.build_files_content(current_batch)
             batch_prompt_file = os.path.join(temp_dir, f"prompt_{batch_counter}.txt")
             with open(batch_prompt_file, "w") as f:
-                f.write(extractor.analyze(current_batch, batch_counter + 1, total_batches, return_prompt=True))
+                f.write(extractor.analyze(files_to_analyze_str, batch_counter + 1, total_batches, return_prompt=True))
             batches.append(batch_prompt_file)
 
         return batches
