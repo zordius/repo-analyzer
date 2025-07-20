@@ -61,18 +61,7 @@ class AgentOrchestrator:
         with open(self.prompt_file, "r") as f:
             prompt = f.read()
         
-        # Determine which extractor to use based on the prompt content
-        # This is a simplified approach; a more robust solution might pass
-        # the extractor type as an argument to --prompt-file
-        if "coding practices" in prompt:
-            analysis_type = "coding practices"
-        elif "domain knowledge" in prompt:
-            analysis_type = "domain knowledge"
-        else:
-            print("Error: Could not determine extractor type from prompt file.")
-            return
-
-        result = self.analyzer.analyze_content(prompt, analysis_type)
+        result = self.analyzer.analyze_content(prompt)
         print(result)
 
     def _analyze_in_parallel(self, extractor, header, temp_dir):
