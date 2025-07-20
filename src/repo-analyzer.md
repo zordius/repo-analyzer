@@ -8,11 +8,13 @@ Arguments
 
 By default, check all files under current directory, and do level 1 analyze
 
-* `-list` $file : read relative path file names from the $file, then work on these files
-* `-level` $n : do level $n analyze
-* `--skip` $pattern ... : a list of glob patterns to skip during analysis
-* `--timeout` $seconds : the timeout in seconds for the API call (default: 60)
-* `--debug` : enable debug mode for verbose output
+* `--ai-client` $client : The AI client to use. Choices: `google-gemini-cli` (default), `google-generativeai`.
+* `--context-size` $size : The maximum context size for the AI model in characters (default: 10000).
+* `--debug` : Enable debug mode for verbose output.
+* `--level` $n : The analysis level (1-5).
+* `--list` or `-l` $file : Read relative path file names from the $file, then work on these files.
+* `--skip` $pattern ... : A list of glob patterns to skip during analysis.
+* `--timeout` $seconds : The timeout in seconds for the API call (default: 60).
 
 Analyze Levels
 --------------
