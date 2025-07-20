@@ -11,6 +11,7 @@ By default, check all files under current directory, and do level 1 analyze
 * `--ai-client` $client : The AI client to use. Choices: `google-gemini-cli` (default), `google-generativeai`.
 * `--context-size` $size : The maximum context size for the AI model in characters (default: 10000).
 * `--debug` : Enable debug mode for verbose output.
+* `--instances` $n : The maximum number of parallel AI analysis instances (default: 2).
 * `--level` $n : The analysis level (1-5).
 * `--list` or `-l` $file : Read relative path file names from the $file, then work on these files.
 * `--skip` $pattern ... : A list of glob patterns to skip during analysis.

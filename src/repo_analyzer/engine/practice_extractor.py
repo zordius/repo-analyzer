@@ -39,8 +39,9 @@ class PracticeExtractor:
         }
         return lang_map.get(ext, '')
 
-    def analyze(self, file_contents, batch_number=1, total_batches=1):
-        print(f"Analyzing files for coding practices (batch {batch_number}/{total_batches})...")
+    def analyze(self, file_contents, batch_number=1, total_batches=1, return_prompt=False):
+        if total_batches > 0:
+            print(f"Analyzing files for coding practices (batch {batch_number}/{total_batches})...")
         if not file_contents:
             return "# Extracted Practices\n\nNo files to analyze."
 
@@ -82,6 +83,9 @@ class PracticeExtractor:
 
         Your analysis output must start with the exact text: ---ANALYSIS-START---
         """
+
+        if return_prompt:
+            return prompt
 
         if self.debug:
             print_debug_info("PROMPT", prompt)
