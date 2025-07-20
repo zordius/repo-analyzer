@@ -5,6 +5,7 @@ from .collectors.file_collector import FileCollector
 from .engine.practice_extractor import PracticeExtractor
 from .engine.knowledge_extractor import KnowledgeExtractor
 from .reporter import ReportGenerator
+from .engine.analyzer import Analyzer
 
 class AgentOrchestrator:
     def __init__(self, level, file_list, skip_patterns=None, timeout=60, debug=False, ai_client='cli', context_size=10000, prompt_file=None, instances=2):
@@ -18,9 +19,10 @@ class AgentOrchestrator:
         self.prompt_file = prompt_file
         self.instances = instances
         self.file_contents = {}
-        self.practice_extractor = PracticeExtractor(timeout=self.timeout, debug=self.debug, ai_client=self.ai_client)
-        self.knowledge_extractor = KnowledgeExtractor(timeout=self.timeout, debug=self.debug, ai_client=self.ai_client)
+        self.practice_extractor = PracticeExtractor()
+        self.knowledge_extractor = KnowledgeExtractor()
         self.reporter = ReportGenerator()
+        self.analyzer = Analyzer(timeout=self.timeout, debug=self.debug, ai_client=self.ai_client)
 
     def run(self):
         if self.prompt_file:
@@ -63,14 +65,14 @@ class AgentOrchestrator:
         # This is a simplified approach; a more robust solution might pass
         # the extractor type as an argument to --prompt-file
         if "coding practices" in prompt:
-            extractor = self.practice_extractor
+            analysis_type = "coding practices"
         elif "domain knowledge" in prompt:
-            extractor = self.knowledge_extractor
+            analysis_type = "domain knowledge"
         else:
             print("Error: Could not determine extractor type from prompt file.")
             return
 
-        result = extractor.ai_client.analyze(prompt)
+        result = self.analyzer.analyze_content(prompt, analysis_type)
         print(result)
 
     def _analyze_in_parallel(self, extractor, header, temp_dir):
@@ -163,7 +165,7 @@ class AgentOrchestrator:
             if current_size + len(content) > self.context_size and current_batch:
                 batch_prompt_file = os.path.join(temp_dir, f"prompt_{batch_counter}.txt")
                 with open(batch_prompt_file, "w") as f:
-                    f.write(extractor.analyze(files_to_analyze_str, batch_counter + 1, total_batches, return_prompt=True))
+                    f.write(extractor.get_prompt(files_to_analyze_str))
                 batches.append(batch_prompt_file)
                 current_batch = {}
                 current_size = 0
@@ -185,8 +187,10 @@ class AgentOrchestrator:
 
             batch_prompt_file = os.path.join(temp_dir, f"prompt_{batch_counter}.txt")
             with open(batch_prompt_file, "w") as f:
-                f.write(extractor.analyze(files_to_analyze_str, batch_counter + 1, total_batches, return_prompt=True))
+                f.write(extractor.get_prompt(files_to_analyze_str))
             batches.append(batch_prompt_file)
+
+        return batches
 
         return batches
 
