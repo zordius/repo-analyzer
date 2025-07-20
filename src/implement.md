@@ -12,12 +12,11 @@ The system should consist of the following main components:
 
 *   **Purpose**: Parse command-line arguments and orchestrate the analysis process.
 *   **Configuration Options**:
-    *   `--file-list` (optional): Path to a file containing a list of relative file paths to analyze. If not provided, analyze the current directory.
     *   `--level` (integer, default: 1): Analysis level (e.g., 1-5), potentially influencing the depth or type of analysis.
     *   `--skip` (list of glob patterns, optional): Patterns for files/directories to exclude from analysis.
     *   `--timeout` (integer, default: 60): Timeout in seconds for AI API calls.
     *   `--debug` (flag): Enable verbose debug output.
-    *   `--ai-client` (choice, default: 'cli'): Specifies the AI client to use (e.g., 'cli' for a command-line interface, 'library' for a direct API library).
+    *   `--cli` (string, default: 'gemini'): The executable name of the AI command-line tool to use for analysis (e.g., 'gemini', 'gcloud ai').
     *   `--context-size` (integer, default: 10000): Maximum context size (in characters/tokens) for the AI model per batch.
     *   `--prompt-file` (optional): Path to a file containing a pre-defined prompt for direct AI analysis (bypasses file collection).
     *   `--instances` (integer, default: 2): Maximum number of parallel AI analysis instances.
@@ -28,7 +27,7 @@ The system should consist of the following main components:
 *   **Workflow**:
     1.  If `--prompt-file` is provided, read its content and send it directly to the AI for analysis, then print the result.
     2.  Otherwise:
-        *   Collect files based on the provided `--file-list` or by recursively scanning the current directory.
+        *   Collect files by recursively scanning the current directory.
         *   Filter out files based on `--skip` patterns, common ignored directories (e.g., `node_modules`, `.git`, `__pycache__`), and common binary/archive file extensions (e.g., `.jpg`, `.zip`, `.pdf`).
         *   Read the content of the collected files. Skip very large or empty files.
         *   Batch the collected file contents. Each batch should not exceed the `--context-size`.
@@ -41,12 +40,12 @@ The system should consist of the following main components:
 
 *   **Purpose**: Discover and filter files within a codebase.
 *   **Functionality**:
-    *   Collect files from a specified directory (recursively) or from a list of paths provided in a file.
+    *   Collect files from current directory (recursively).
     *   Implement robust filtering based on:
         *   Explicit `skip_patterns` (glob patterns).
         *   Common ignored directories (e.g., `__pycache__`, `node_modules`, `build`, `dist`, `.vscode`, `.idea`, `venv`, `.git` subdirectories like `logs`, `objects`).
         *   Common ignored file extensions (e.g., `.pyc`, `.so`, `.dll`, image formats, archive formats, `.pdf`, `.doc`).
-    *   Return absolute paths of collected files.
+    *   Return relative paths of collected files.
 
 ### 4. AI Client Abstraction
 
@@ -58,9 +57,6 @@ The system should consist of the following main components:
         *   Handle `TimeoutExpired` if the command times out.
         *   Handle `CalledProcessError` for other command execution errors.
         *   Extract the relevant output from the CLI tool's stdout (e.g., everything after a specific marker like `---ANALYSIS-START---`).
-    *   **Library-based Client**: Interacts directly with an AI model's API library (e.g., Google's Generative AI library).
-        *   Handle API initialization errors (e.g., missing API key).
-        *   Handle API call errors and timeouts.
 
 ### 5. Analyzers
 
