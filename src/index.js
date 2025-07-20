@@ -1,5 +1,5 @@
 const fs = require('fs');
-const path = require('path');
+const pLimit = require('p-limit');
 const FileCollector = require('./fileCollector');
 const AIClient = require('./aiClient');
 const ReportGenerator = require('./reportGenerator');
@@ -51,10 +51,9 @@ class RepoAnalyzer {
     let currentBatchFiles = [];
 
     for (const file of files) {
-      const absoluteFilePath = path.resolve(file);
       let content = '';
       try {
-        content = await fs.promises.readFile(absoluteFilePath, 'utf-8');
+        content = await fs.promises.readFile(file, 'utf-8');
       } catch (error) {
         debugLog(this.debug, `Could not read file ${file}: ${error.message}. Skipping.`);
         continue;
@@ -91,36 +90,29 @@ class RepoAnalyzer {
   }
 
   async _runAnalysisInParallel(batches) {
-    const results = [];
-    const runningPromises = new Set(); // Store promise objects
-
-    for (let i = 0; i < batches.length; i++) {
-      const batch = batches[i];
-      const promise = this.aiClient.analyze(batch.prompt)
-        .then(result => {
-          results.push({ batch: batch.files, result });
-          return { status: 'fulfilled', promiseObject: promise }; // Return promise object itself
-        })
-        .catch(error => {
-          console.error(`Error analyzing batch ${i}:`, error.message);
-          if (this.debug) {
-            console.error(error);
-          }
-          return { status: 'rejected', promiseObject: promise, reason: error }; // Return promise object itself
-        });
-
-      runningPromises.add(promise);
-
-      if (runningPromises.size >= this.instances) {
-        // Wait for one of the running promises to settle
-        const settledResult = await Promise.race(Array.from(runningPromises).map(p => p.then(val => val, err => err)));
-        runningPromises.delete(settledResult.promiseObject);
+    const limit = pLimit(this.instances);
+    const tasks = batches.map(batch => limit(async () => {
+      try {
+        const result = await this.aiClient.analyze(batch.prompt);
+        return { status: 'fulfilled', batch: batch.files, result };
+      } catch (error) {
+        console.error(`Error analyzing batch:`, error.message);
+        if (this.debug) {
+          console.error(error);
+        }
+        return { status: 'rejected', batch: batch.files, reason: error.message };
       }
-    }
+    }));
+    const results = await Promise.allSettled(tasks);
 
-    // Wait for all remaining promises to settle
-    await Promise.all(Array.from(runningPromises).map(p => p.then(val => val, err => err)));
-    return results;
+    return results.map(result => {
+      if (result.status === 'fulfilled') {
+        return result.value;
+      } else {
+        // For rejected promises, the catch block already handled logging and returned a rejected status object
+        return result.reason; // This will be the object returned by the catch block
+      }
+    });
   }
 }
 
