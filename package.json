@@ -5,8 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "bin": {
-    "repo-analyzer": "src/cli.js",
-    "mcp-cursor-to-gemini": "src/mcpCursorToGemini.js"
+    "repo-analyzer": "src/cli.js"
   },
   "scripts": {
     "start": "node src/cli.js",
