@@ -8,7 +8,8 @@ Arguments
 
 By default, check all files under current directory, and do level 1 analyze
 
-* `--ai-client` $client : The AI client to use. Choices: `google-gemini-cli` (default), `google-generativeai`.
+* `--ai-client` $client : The AI client to use. Choices: `google-gemini-cli` (default),
+  `google-generativeai`.
 * `--context-size` $size : The maximum context size for the AI model in characters (default: 10000).
 * `--debug` : Enable debug mode for verbose output.
 * `--instances` $n : The maximum number of parallel AI analysis instances (default: 2).
@@ -20,24 +21,27 @@ By default, check all files under current directory, and do level 1 analyze
 Analyze Levels
 --------------
 
-The analyze level can be changed by the command line argument `-level n` . If a file related with higher level, do not include it. If a file related with lower level, also include it.
+The analyze level can be changed by the command line argument `-level n` . If a file related with
+higher level, do not include it. If a file related with lower level, also include it.
 
 * Level 1:
   * Analyzes the user's source files.
-  * Ignores binary files, build artifacts (e.g., `build`, `dist`), and common temporary directories (e.g., `node_modules`, `__pycache__`).
-  * Skips most of the `.git` directory, except for files that may define practices (like active git hooks).
+  * Ignores binary files, build artifacts (e.g., `build`, `dist`), and common temporary
+    directories (e.g., `node_modules`, `__pycache__`).
+  * Skips most of the `.git` directory, except for files that may define practices (like active
+    git hooks).
   * Respects the project's `.gitignore` file.
 * Level 2:
   * Expands analysis to include git-specific files.
   * Reads active (non-sample) git hooks from the `.git/hooks` directory.
 * Level 3:
-  * also extract practices and domain knowledges from github related files:
+  * also extract practices and domain knowledges from GitHub-related files:
     * if there is .github directory in the git repository, also check it
 * Level 4:
   * also extract practices and domain knowledges from git commits:
     * see all commits changes and messages in the git repository
 * Level 5:
-  * also extract practices and domain knowledges from github:
+  * also extract practices and domain knowledges from GitHub:
     * see all pull requests and issues in the git repository
     * read all pull requests comments
 
@@ -47,11 +51,16 @@ Extract Practices
 * all practices will be written into a file `ai4ci-practices.md`
   * the file will be in markdown format
   * one practice will be a bullet list item as a simple description for the practice
-    * all files related with the practice will be bullet list items as next level of the practice, the bullet list item will contain the relative path and name, for example: `* file: relative/path/filename`
-    * all labels related with a practice will be a bullet list items as next level of the practice, the bullet list item will contain the label name, for example: `* label: lint`
+    * all files related with the practice will be bullet list items as next level of the practice,
+      the bullet list item will contain the relative path and name, for example:
+      `* file: relative/path/filename`
+    * all labels related with a practice will be a bullet list items as next level of the practice,
+      the bullet list item will contain the label name, for example: `* label: lint`
 * we like to mark practices with proper labels.
-  * the more times a practice been used, then we have more confidence that the practice is a `standard` in this project
-  * the more times a practice been replaced, then we have more confidence that the practice is a `retired` practice
+  * the more times a practice been used, then we have more confidence that the practice is a
+    `standard` in this project
+  * the more times a practice been replaced, then we have more confidence that the practice is a
+    `retired` practice
   * if all code related with a practice been commited before 1 year, mark it as `old`
   * everything described in a text file or .md file should be labeled with `document`
   * if the practice are well known in the world, it can be labeled with `common` practice

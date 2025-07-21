@@ -10,7 +10,8 @@
   "scripts": {
     "start": "node src/cli.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "lint:md": "markdownlint \"prompt/**/*.md\" \"README.md\""
   },
   "keywords": [
     "code-analysis",
@@ -26,6 +27,7 @@
     "p-limit": "^6.2.0"
   },
   "devDependencies": {
-    "eslint": "^9.31.0"
+    "eslint": "^9.31.0",
+    "markdownlint-cli": "^0.45.0"
   }
 }
