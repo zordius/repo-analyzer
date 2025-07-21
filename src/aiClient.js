@@ -9,7 +9,7 @@ class AIClient {
   }
 
   async analyze(prompt) {
-    const command = `${this.cliCommand} "${prompt}"`;
+    const command = `${this.cliCommand} ${JSON.stringify(prompt)}`;
     debugLog(this.debugMode, `Executing AI command: ${command}`);
 
     return new Promise((resolve, reject) => {
