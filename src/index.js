@@ -29,24 +29,24 @@ class RepoAnalyzer {
   }
 
   async run() {
-    debugLog(this.debug, 'Starting analysis...');
+    console.log('Starting analysis...');
 
     // 1. Collect files
     const files = await this.fileCollector.collectFiles();
-    debugLog(this.debug, `Collected ${files.length} files.`);
+    console.log(`Collected ${files.length} files.`);
 
     // 2. Read file contents and batch them
     const batches = await this._prepareBatches(files);
-    debugLog(this.debug, `Prepared ${batches.length} batches.`);
+    console.log(`Prepared ${batches.length} batches.`);
 
     // 3. Execute AI analysis in parallel
     const results = await this._runAnalysisInParallel(batches);
-    debugLog(this.debug, 'AI analysis complete.');
+    console.log('AI analysis complete.');
 
     // 4. Generate reports (placeholder for now)
     const outputFileName = path.basename(this.promptFilePath);
-    this.reportGenerator.generateReport(outputFileName, JSON.stringify(results, null, 2));
-    debugLog(this.debug, 'Report generated.');
+    this.reportGenerator.generateReport(outputFileName, results.join('\n\n'));
+    console.log('Report generated.');
   }
 
   async _prepareBatches(files) {
@@ -111,10 +111,9 @@ class RepoAnalyzer {
 
     return results.map(result => {
       if (result.status === 'fulfilled') {
-        return result.value;
+        return result.value.result; // Extract the actual AI analysis result
       } else {
-        // For rejected promises, the catch block already handled logging and returned a rejected status object
-        return result.reason; // This will be the object returned by the catch block
+        return `Error: ${result.reason}`; // Return error message for rejected promises
       }
     });
   }
