@@ -17,6 +17,7 @@ class RepoAnalyzer {
     this.prompt = options.prompt;
     this.instances = options.instances;
     this.reportDir = options.reportDir;
+    this.promptFilePath = options.promptFilePath;
 
     this.fileCollector = new FileCollector({
       exclude: this.exclude,
