@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import pLimit from 'p-limit';
 import FileCollector from './fileCollector.js';
 import AIClient from './aiClient.js';
@@ -15,6 +16,7 @@ class RepoAnalyzer {
     this.contextSize = options.contextSize;
     this.prompt = options.prompt;
     this.instances = options.instances;
+    this.reportDir = options.reportDir;
 
     this.fileCollector = new FileCollector({
       exclude: this.exclude,
@@ -22,7 +24,7 @@ class RepoAnalyzer {
       debug: this.debug,
     });
     this.aiClient = new AIClient(this.cli, this.timeout, this.debug);
-    this.reportGenerator = new ReportGenerator('.', this.debug);
+    this.reportGenerator = new ReportGenerator(this.reportDir, this.debug);
   }
 
   async run() {
@@ -41,7 +43,8 @@ class RepoAnalyzer {
     debugLog(this.debug, 'AI analysis complete.');
 
     // 4. Generate reports (placeholder for now)
-    this.reportGenerator.generateReport('analysis_report.md', JSON.stringify(results, null, 2));
+    const outputFileName = path.basename(this.promptFilePath);
+    this.reportGenerator.generateReport(outputFileName, JSON.stringify(results, null, 2));
     debugLog(this.debug, 'Report generated.');
   }
 

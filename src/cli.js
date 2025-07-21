@@ -16,7 +16,8 @@ program.option('--exclude <patterns...>', 'Patterns for files/directories to exc
   .option('--cli <name>', 'The executable name of the AI command-line tool to use for analysis.', 'gemini -p')
   .option('--context-size <size>', 'Maximum context size (in characters/tokens) for the AI model per batch.', parseInt, 10000)
   .option('--prompt-file <file>', 'Path to a file containing the base prompt for AI analysis.')
-  .option('--instances <number>', 'Maximum number of parallel AI analysis instances.', parseInt, 2);
+  .option('--instances <number>', 'Maximum number of parallel AI analysis instances.', parseInt, 2)
+  .option('--report-dir <dir>', 'Directory to save analysis reports.', './reports');
 
 program.action(async (options) => {
   if (!options.promptFile) {
@@ -41,6 +42,8 @@ program.action(async (options) => {
     contextSize: options.contextSize,
     prompt: promptContent,
     instances: options.instances,
+    promptFilePath: options.promptFile,
+    reportDir: options.reportDir,
   });
 
   try {
