@@ -68,7 +68,7 @@ class RepoAnalyzer {
         continue;
       }
 
-      const fileEntry = `--- ${file} ---\n${content}\n`;
+      const fileEntry = `--- ${file} ---\n\`\`\`\`\`\`\`\`file\n${content}\n\`\`\`\`\`\`\`\`\n`;
 
       if ((currentBatchContent + fileEntry).length > this.contextSize && currentBatchContent.length > 0) {
         batches.push({
@@ -95,11 +95,25 @@ class RepoAnalyzer {
 
   async _runAnalysisInParallel(batches) {
     const limit = pLimit(this.instances);
-    const tasks = batches.map(batch => limit(async () => {
+    const startTime = Date.now();
+    let completedBatches = 0;
+    const totalBatches = batches.length;
+
+    console.log(`Starting analysis of ${totalBatches} batches with ${this.instances} parallel instances...`);
+
+    const tasks = batches.map((batch, index) => limit(async () => {
+      const batchStartTime = Date.now();
       try {
         const result = await this.aiClient.analyze(batch.prompt);
+        completedBatches++;
+        const elapsedSeconds = Math.round((Date.now() - startTime) / 1000);
+        const batchTime = Math.round((Date.now() - batchStartTime) / 1000);
+        console.log(`✓ Batch ${index + 1}/${totalBatches} completed (${batchTime}s) - Total: ${completedBatches}/${totalBatches} batches, ${elapsedSeconds}s elapsed`);
         return { status: 'fulfilled', batch: batch.files, result };
       } catch (error) {
+        completedBatches++;
+        const elapsedSeconds = Math.round((Date.now() - startTime) / 1000);
+        console.error(`✗ Batch ${index + 1}/${totalBatches} failed (${elapsedSeconds}s elapsed) - Total: ${completedBatches}/${totalBatches} batches`);
         console.error(`Error analyzing batch:`, error.message);
         if (this.debug) {
           console.error(error);
@@ -108,6 +122,9 @@ class RepoAnalyzer {
       }
     }));
     const results = await Promise.allSettled(tasks);
+
+    const totalTime = Math.round((Date.now() - startTime) / 1000);
+    console.log(`\nAnalysis completed in ${totalTime} seconds. Processed ${totalBatches} batches.`);
 
     return results.map(result => {
       if (result.status === 'fulfilled') {

@@ -32,8 +32,6 @@ coding practices based on the provided files.
 Markdown bulleted list, as shown in the example.
 
 ```markdown
-# Extracted Practices
-
 * **Practice Name**
   * label: a-label
   * file: path/to/file.ext
