@@ -14,14 +14,14 @@ const getPromptPath = () => {
   return promptPath;
 };
 
-async function runPracticeAnalysis() {
+function buildPracticeCommand() {
   // Get the absolute path to the practice analyzer prompt
   const promptPath = getPromptPath();
 
   // Get the path to cli.js
   const cliPath = path.join(__dirname, 'cli.js');
 
-  // Get all arguments passed to practice.js
+  // Get all arguments passed to cli_practice.js
   const selfArgs = process.argv.slice(2);
 
   const args = [...selfArgs];
@@ -33,12 +33,12 @@ async function runPracticeAnalysis() {
     args.unshift('--prompt-file', promptPath);
   }
 
-  // Set the arguments for cli.js
-  process.argv = [process.argv[0], cliPath, ...args];
+  // Build the shell command
+  const command = `node ${cliPath} ${args.join(' ')}`;
 
-  // Import and run cli.js directly
-  await import(cliPath);
+  // Only log the command, don't execute it
+  console.log(command);
 }
 
-// Run the practice analysis
-runPracticeAnalysis();
+// Build and log the practice command
+buildPracticeCommand();
