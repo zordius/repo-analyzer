@@ -26,6 +26,9 @@ class RepoAnalyzer {
     });
     this.aiClient = new AIClient(this.cli, this.timeout, this.debug);
     this.reportGenerator = new ReportGenerator(this.reportDir, this.debug);
+
+    // Initialize error collection
+    this.errors = [];
   }
 
   async run() {
@@ -39,13 +42,21 @@ class RepoAnalyzer {
     const batches = await this._prepareBatches(files);
     console.log(`Prepared ${batches.length} batches.`);
 
-    // 3. Execute AI analysis in parallel
-    const results = await this._runAnalysisInParallel(batches);
-    console.log('AI analysis complete.');
-
-    // 4. Generate reports (placeholder for now)
+    // 3. Initialize report for progressive writing
     const outputFileName = path.basename(this.promptFilePath);
-    this.reportGenerator.generateReport(outputFileName, results.join('\n\n'));
+    await this.reportGenerator.initializeReport(outputFileName, `Total Files: ${files.length}\nTotal Batches: ${batches.length}`);
+
+    // 4. Execute AI analysis in parallel with progressive writing
+    await this._runAnalysisInParallel(batches);
+
+    // 5. Write error log if there are errors
+    if (this.errors.length > 0) {
+      await this._writeErrorLog();
+    }
+
+    // 6. Finalize the report
+    const footer = `Analysis Summary:\n- Total Files Processed: ${files.length}\n- Total Batches: ${batches.length}\n- Failed Batches: ${this.errors.length}`;
+    await this.reportGenerator.finalizeReport(footer);
     console.log('Report generated.');
   }
 
@@ -109,6 +120,12 @@ class RepoAnalyzer {
         const elapsedSeconds = Math.round((Date.now() - startTime) / 1000);
         const batchTime = Math.round((Date.now() - batchStartTime) / 1000);
         console.log(`✓ Batch ${index + 1}/${totalBatches} completed (${batchTime}s) - Total: ${completedBatches}/${totalBatches} batches, ${elapsedSeconds}s elapsed`);
+
+        // Write result progressively
+        const batchHeader = `BATCH ${index + 1}/${totalBatches} - Files: ${batch.files.length}`;
+        const batchContent = `${batchHeader}\n${'='.repeat(60)}\n${result}`;
+        await this.reportGenerator.appendToReport(batchContent);
+
         return { status: 'fulfilled', batch: batch.files, result };
       } catch (error) {
         completedBatches++;
@@ -118,21 +135,75 @@ class RepoAnalyzer {
         if (this.debug) {
           console.error(error);
         }
+
+        // Collect error details
+        this.errors.push({
+          timestamp: new Date().toISOString(),
+          batchIndex: index + 1,
+          batchFiles: batch.files,
+          error: error.message,
+          stack: error.stack,
+          elapsedTime: elapsedSeconds,
+          batchTime: Math.round((Date.now() - batchStartTime) / 1000)
+        });
+
+        // Write error to report progressively
+        const errorHeader = `BATCH ${index + 1}/${totalBatches} - ERROR - Files: ${batch.files.length}`;
+        const errorContent = `${errorHeader}\n${'='.repeat(60)}\nError: ${error.message}\n\nFiles in this batch:\n${batch.files.map(f => `- ${f}`).join('\n')}`;
+        await this.reportGenerator.appendToReport(errorContent);
+
         return { status: 'rejected', batch: batch.files, reason: error.message };
       }
     }));
-    const results = await Promise.allSettled(tasks);
+
+    await Promise.allSettled(tasks);
 
     const totalTime = Math.round((Date.now() - startTime) / 1000);
     console.log(`\nAnalysis completed in ${totalTime} seconds. Processed ${totalBatches} batches.`);
 
-    return results.map(result => {
-      if (result.status === 'fulfilled') {
-        return result.value.result; // Extract the actual AI analysis result
-      } else {
-        return `Error: ${result.reason}`; // Return error message for rejected promises
+    if (this.errors.length > 0) {
+      console.log(`⚠️  ${this.errors.length} batches failed. Check error log for details.`);
+    }
+  }
+
+  async _writeErrorLog() {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const errorLogPath = path.join(this.reportDir, `error-log-${timestamp}.txt`);
+
+    let errorLogContent = `Repo Analyzer Error Log\n`;
+    errorLogContent += `Generated: ${new Date().toISOString()}\n`;
+    errorLogContent += `Total Errors: ${this.errors.length}\n`;
+    errorLogContent += `Report Directory: ${this.reportDir}\n`;
+    errorLogContent += `Prompt File: ${this.promptFilePath}\n`;
+    errorLogContent += `CLI Command: ${this.cli}\n`;
+    errorLogContent += `Timeout: ${this.timeout}s\n`;
+    errorLogContent += `Parallel Instances: ${this.instances}\n`;
+    errorLogContent += `Context Size: ${this.contextSize}\n\n`;
+    errorLogContent += `${'='.repeat(80)}\n\n`;
+
+    this.errors.forEach((error, index) => {
+      errorLogContent += `ERROR ${index + 1}/${this.errors.length}\n`;
+      errorLogContent += `Timestamp: ${error.timestamp}\n`;
+      errorLogContent += `Batch: ${error.batchIndex}\n`;
+      errorLogContent += `Batch Time: ${error.batchTime}s\n`;
+      errorLogContent += `Elapsed Time: ${error.elapsedTime}s\n`;
+      errorLogContent += `Files in Batch:\n`;
+      error.batchFiles.forEach(file => {
+        errorLogContent += `  - ${file}\n`;
+      });
+      errorLogContent += `Error Message: ${error.error}\n`;
+      if (error.stack) {
+        errorLogContent += `Stack Trace:\n${error.stack}\n`;
       }
+      errorLogContent += `\n${'='.repeat(80)}\n\n`;
     });
+
+    try {
+      await fs.promises.writeFile(errorLogPath, errorLogContent, 'utf-8');
+      console.log(`📝 Error log written to: ${errorLogPath}`);
+    } catch (writeError) {
+      console.error(`Failed to write error log: ${writeError.message}`);
+    }
   }
 }
 
