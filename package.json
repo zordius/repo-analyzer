@@ -6,11 +6,11 @@
   "type": "module",
   "bin": {
     "repo-analyzer": "src/cli.js",
-    "practice": "src/cli_practice.js"
+    "practice": "bin/practice.sh"
   },
   "scripts": {
     "start": "node src/cli.js",
-    "practice": "node src/practice.js",
+    "practice": "./bin/practice.sh",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint src/",
     "lint:md": "markdownlint \"prompt/**/*.md\" \"README.md\""
