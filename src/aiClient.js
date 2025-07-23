@@ -2,6 +2,9 @@ import { spawn } from 'child_process';
 import { debugLog } from './utils.js';
 
 class AIClient {
+  static ANALYSIS_MARKER = '---ANALYSIS-START---';
+  static ANALYSIS_REGEX = new RegExp(`.*${AIClient.ANALYSIS_MARKER}`, 's');
+
   constructor(cliCommand, timeout, debugMode) {
     this.cliCommand = cliCommand;
     this.timeout = timeout * 1000; // Convert to milliseconds
@@ -10,6 +13,9 @@ class AIClient {
 
   async analyze(prompt) {
     debugLog(this.debugMode, `Executing AI command: ${this.cliCommand}`);
+
+    // Append the required marker instruction to the prompt
+    const enhancedPrompt = `${prompt}\n\nYour analysis output must start with the exact text: ${AIClient.ANALYSIS_MARKER}`;
 
     return new Promise((resolve, reject) => {
       const child = spawn(this.cliCommand, [], {
@@ -41,16 +47,11 @@ class AIClient {
         }
 
         debugLog(this.debugMode, `AI command stdout: ${stdout}`);
-        const marker = '---ANALYSIS-START---';
-        const startIndex = stdout.indexOf(marker);
-        if (startIndex !== -1) {
-          resolve(stdout.substring(startIndex + marker.length).trim());
-        } else {
-          resolve(stdout.trim());
-        }
+        const result = stdout.replace(AIClient.ANALYSIS_REGEX, '').trim();
+        resolve(result);
       });
 
-      child.stdin.write(prompt);
+      child.stdin.write(enhancedPrompt);
       child.stdin.end();
     });
   }

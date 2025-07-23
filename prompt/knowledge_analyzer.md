@@ -15,5 +15,3 @@ domain knowledge based on the provided files.
 
 **Output Format:**
 Markdown document.
-
-Your analysis output must start with the exact text: ---ANALYSIS-START---

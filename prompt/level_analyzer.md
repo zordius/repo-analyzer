@@ -34,5 +34,3 @@ based on a specified analysis level.
 Given a list of file paths and a specified analysis level, determine which files should be
 included for analysis. If a file is related to a higher level than the current analysis level,
 it should be excluded. If a file is related to a lower level, it should be included.
-
-Your analysis output must start with the exact text: ---ANALYSIS-START---

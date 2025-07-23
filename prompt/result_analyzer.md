@@ -32,7 +32,6 @@ during consolidation.
 **Output Structure**:
 
 * Generate a detailed, organized summary in **Markdown format**.
-* Start your output with the text `---ANALYSIS-START---`.
 * Use clear headings (e.g., `## Consolidated Analysis Results`).
 * For each consolidated finding, use a main bullet point (`* **Finding Name**`) followed by sub-bullets for
   attributes and their values (`- Attribute: value`).
@@ -65,7 +64,6 @@ during consolidation.
 **Expected Output Example**:
 
 ```markdown
----ANALYSIS-START---
 
 ## Consolidated Analysis Results
 

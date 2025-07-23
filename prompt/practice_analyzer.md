@@ -39,5 +39,3 @@ Markdown bulleted list, as shown in the example.
   * file: path/to/file.ext
   * file: another/path/to/file.ext
 ```
-
-Your analysis output must start with the exact text: ---ANALYSIS-START---
