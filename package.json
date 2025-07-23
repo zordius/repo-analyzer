@@ -1,5 +1,5 @@
 {
-  "name": "repo-analyzer-nodejs",
+  "name": "repo-analyzer",
   "version": "1.0.0",
   "description": "A command-line tool for large-scale code analysis using an external AI CLI.",
   "main": "src/index.js",
