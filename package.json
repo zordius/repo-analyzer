@@ -1,11 +1,11 @@
 {
-  "name": "repo-analyzer",
+  "name": "z-repo-analyzer",
   "version": "0.1.0",
   "description": "A command-line tool for large-scale code analysis using an external AI CLI.",
   "main": "src/index.js",
   "type": "module",
   "bin": {
-    "repo-analyzer": "src/cli.js",
+    "z-repo-analyzer": "src/cli.js",
     "practice": "bin/practice.sh"
   },
   "scripts": {
